@@ -6,7 +6,7 @@ import io
 st.set_page_config(page_title="VIOLA Warehouse Extractor", layout="centered")
 
 st.title("📊 VIOLA Warehouse Column Extractor")
-st.markdown("Upload a `.xlsb` file to extract and convert specified columns into a CSV.")
+st.markdown("Upload a `.xlsb` file and select an AS_OF_DATE to extract and convert specified columns into a CSV.")
 
 # Upload XLSB file
 uploaded_file = st.file_uploader("Upload Borrowing Base Certified Report (.xlsb)", type="xlsb")
@@ -22,18 +22,22 @@ column_map = {
     'RECEIVABLE_ID': 'RECEIVABLE_ID'
 }
 
+# Date input
+as_of_date = st.date_input("Select AS_OF_DATE", value=datetime.today())
+formatted_date = as_of_date.strftime('%m/%d/%Y')
+
 if uploaded_file:
     try:
         sheet_name = 'Main Data'
 
-        # Read XLSB file without converting 'n/a' to NaN
+        # Read XLSB file without interpreting "n/a" as NaN
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='pyxlsb', keep_default_na=False)
 
         # Filter and rename columns
         df_filtered = df[list(column_map.keys())].rename(columns=column_map)
 
-        # Add today's date as AS_OF_DATE
-        df_filtered['AS_OF_DATE'] = datetime.today().strftime('%m/%d/%Y')
+        # Add user-selected AS_OF_DATE
+        df_filtered['AS_OF_DATE'] = formatted_date
 
         # Convert to CSV in memory
         csv_buffer = io.StringIO()
