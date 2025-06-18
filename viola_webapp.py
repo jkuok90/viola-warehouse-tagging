@@ -36,10 +36,13 @@ if uploaded_file:
 
         # Fix SPV Transfer Date if present and numeric
         if 'SPV Transfer Date' in df.columns:
-            # Convert only numeric values (non-empty)
+            # Convert Excel serial to datetime
             df['SPV Transfer Date'] = pd.to_datetime(
                 '1899-12-30'
             ) + pd.to_timedelta(df['SPV Transfer Date'].astype(float), unit='D')
+
+            # Format to MM/DD/YYYY string
+            df['SPV Transfer Date'] = df['SPV Transfer Date'].dt.strftime('%m/%d/%Y')
 
         # Filter and rename columns
         df_filtered = df[list(column_map.keys())].rename(columns=column_map)
