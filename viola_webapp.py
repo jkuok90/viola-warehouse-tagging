@@ -6,10 +6,14 @@ import io
 st.set_page_config(page_title="VIOLA Warehouse Extractor", layout="centered")
 
 st.title("📊 VIOLA Warehouse Column Extractor")
-st.markdown("Upload a `.xlsb` file and select an AS_OF_DATE to extract and convert specified columns into a CSV.")
+st.markdown(
+    "Upload a `.xlsb` file and select an AS_OF_DATE to extract and convert specified columns into a CSV."
+)
 
 # Upload XLSB file
-uploaded_file = st.file_uploader("Upload Borrowing Base Certified Report (.xlsb)", type="xlsb")
+uploaded_file = st.file_uploader(
+    "Upload Borrowing Base Certified Report (.xlsb)", type="xlsb"
+)
 
 # Column mapping: Original -> Target
 column_map = {
@@ -32,25 +36,26 @@ if uploaded_file:
         sheet_name = 'Main Data'
 
         # Read XLSB file without interpreting "n/a" as NaN
-        df = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='pyxlsb', keep_default_na=False)
+        df = pd.read_excel(
+            uploaded_file,
+            sheet_name=sheet_name,
+            engine='pyxlsb',
+            keep_default_na=False
+        )
 
-        # ✅ If SPV Transfer Date exists, convert & format it to match AS_OF_DATE
-            if 'SPV Transfer Date' in df.columns:
-            # Convert to numeric; non-numeric cells become NaN
+        # ✅ If SPV Transfer Date exists, safely convert & format to MM/DD/YYYY
+        if 'SPV Transfer Date' in df.columns:
+            # Convert to numeric; invalids become NaN
             df['SPV Transfer Date'] = pd.to_numeric(df['SPV Transfer Date'], errors='coerce')
-
-            # Convert Excel serial number to datetime
-            df['SPV Transfer Date'] = pd.to_datetime(
-                '1899-12-30'
-            ) + pd.to_timedelta(df['SPV Transfer Date'], unit='D')
-
-            # Format as MM/DD/YYYY; NaT stays blank
+            # Convert Excel serial to datetime
+            df['SPV Transfer Date'] = pd.to_datetime('1899-12-30') + pd.to_timedelta(df['SPV Transfer Date'], unit='D')
+            # Format as MM/DD/YYYY; blanks stay blank
             df['SPV Transfer Date'] = df['SPV Transfer Date'].dt.strftime('%m/%d/%Y')
 
         # Filter and rename columns
         df_filtered = df[list(column_map.keys())].rename(columns=column_map)
 
-        # Add user-selected AS_OF_DATE
+        # Add user-selected AS_OF_DATE in same format
         df_filtered['AS_OF_DATE'] = formatted_date
 
         # Convert to CSV in memory
