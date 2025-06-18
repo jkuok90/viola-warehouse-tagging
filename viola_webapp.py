@@ -34,6 +34,13 @@ if uploaded_file:
         # Read XLSB file without interpreting "n/a" as NaN
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='pyxlsb', keep_default_na=False)
 
+        # Fix SPV Transfer Date if present and numeric
+        if 'SPV Transfer Date' in df.columns:
+            # Convert only numeric values (non-empty)
+            df['SPV Transfer Date'] = pd.to_datetime(
+                '1899-12-30'
+            ) + pd.to_timedelta(df['SPV Transfer Date'].astype(float), unit='D')
+
         # Filter and rename columns
         df_filtered = df[list(column_map.keys())].rename(columns=column_map)
 
