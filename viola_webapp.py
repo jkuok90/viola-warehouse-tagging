@@ -34,14 +34,17 @@ if uploaded_file:
         # Read XLSB file without interpreting "n/a" as NaN
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='pyxlsb', keep_default_na=False)
 
-        # Fix SPV Transfer Date if present and numeric
-        if 'SPV Transfer Date' in df.columns:
-            # Convert Excel serial to datetime
+        # ✅ If SPV Transfer Date exists, convert & format it to match AS_OF_DATE
+            if 'SPV Transfer Date' in df.columns:
+            # Convert to numeric; non-numeric cells become NaN
+            df['SPV Transfer Date'] = pd.to_numeric(df['SPV Transfer Date'], errors='coerce')
+
+            # Convert Excel serial number to datetime
             df['SPV Transfer Date'] = pd.to_datetime(
                 '1899-12-30'
-            ) + pd.to_timedelta(df['SPV Transfer Date'].astype(float), unit='D')
+            ) + pd.to_timedelta(df['SPV Transfer Date'], unit='D')
 
-            # Format to MM/DD/YYYY string
+            # Format as MM/DD/YYYY; NaT stays blank
             df['SPV Transfer Date'] = df['SPV Transfer Date'].dt.strftime('%m/%d/%Y')
 
         # Filter and rename columns
