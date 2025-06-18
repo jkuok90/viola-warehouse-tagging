@@ -19,7 +19,7 @@ column_map = {
     'Final Creditor Name': 'FINAL_CREDITOR_NAME',
     'Manual Pay Flag': 'MANUAL_PAY_FLAG',
     'Exclusion Reason': 'EXCLUSION_REASON',
-    'RECEIVABLE_ID': 'RECEIVABLE_ID'
+    'RECEIVABLE_ID': 'RECEIVABLE_ID',
     'SPV Transfer Date': 'SPV_TRANSFER_DATE'
 }
 
