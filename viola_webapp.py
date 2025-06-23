@@ -5,42 +5,21 @@ import io
 from datetime import datetime
 import time
 
-st.set_page_config(page_title="VIOLA Warehouse Extractor (Google Drive)", layout="centered")
+# === PAGE SETTINGS ===
+st.set_page_config(page_title="VIOLA Warehouse Extractor (Dropbox)", layout="centered")
 
-st.title("📊 VIOLA Warehouse Column Extractor (Google Drive)")
+st.title("📊 VIOLA Warehouse Column Extractor (Dropbox)")
 
 st.markdown("""
 ✅ **How it works:**  
 1. Picks file from your Google Sheet list  
-2. Downloads directly from Google Drive (handles big file confirm page)  
+2. Downloads directly from Dropbox (always raw binary with ?dl=1)  
 3. Processes & lets you download the tagged CSV.
 """)
 
 # === CONFIG ===
 GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"
 CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv&t={int(time.time())}"
-
-# === Helper to download big Drive files ===
-def download_big_file_from_gdrive(file_id):
-    URL = "https://drive.google.com/uc?export=download"
-    session = requests.Session()
-
-    # Step 1: initial request
-    response = session.get(URL, params={'id': file_id}, stream=True)
-    token = get_confirm_token(response)
-
-    # Step 2: if there's a confirm token, follow up with it
-    if token:
-        params = {'id': file_id, 'confirm': token}
-        response = session.get(URL, params=params, stream=True)
-
-    return response.content
-
-def get_confirm_token(response):
-    for key, value in response.cookies.items():
-        if key.startswith('download_warning'):
-            return value
-    return None
 
 # === 1) Load file list ===
 def load_file_list():
@@ -56,11 +35,9 @@ try:
     selected_file = st.selectbox("📁 Choose a file:", file_list['File Name'])
     file_link = file_list.loc[file_list['File Name'] == selected_file, 'File Link'].values[0]
 
-    # Extract Google Drive file ID robustly
-    if "id=" in file_link:
-        file_id = file_link.split("id=")[1]
-    else:
-        file_id = file_link.split("/d/")[1].split("/")[0]
+    # ✅ Ensure Dropbox link uses ?dl=1
+    if file_link.endswith("?dl=0"):
+        file_link = file_link.replace("?dl=0", "?dl=1")
 
 except Exception as e:
     st.error(f"⚠️ Failed to load Google Sheet: {str(e)}")
@@ -73,12 +50,14 @@ formatted_date = as_of_date.strftime('%m/%d/%Y')
 # === 3) Process if user clicks ===
 if st.button("📥 Download and Process"):
     try:
-        st.info(f"Downloading **{selected_file}** from Google Drive (with big file handler)...")
+        st.info(f"Downloading **{selected_file}** from Dropbox...")
 
-        # ✅ USE the robust big file download helper
-        file_content = download_big_file_from_gdrive(file_id)
+        response = requests.get(file_link)
+        if response.status_code != 200:
+            st.error(f"❌ Failed to download file. Status code: {response.status_code}")
+            st.stop()
 
-        file_bytes = io.BytesIO(file_content)
+        file_bytes = io.BytesIO(response.content)
 
         # === Your column mapping ===
         column_map = {
