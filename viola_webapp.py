@@ -20,7 +20,10 @@ GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"  # Use your Goo
 CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv"
 
 # === 1) Load file list ===
-@st.cache_data(show_spinner="🔄 Loading file list...")
+import time
+CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv&t={int(time.time())}"
+
+# Then load without cache
 def load_file_list():
     df = pd.read_csv(CSV_EXPORT_URL)
     return df
