@@ -1,64 +1,83 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+import requests
 import io
+from datetime import datetime
 
-st.set_page_config(page_title="VIOLA Warehouse Extractor", layout="centered")
+st.set_page_config(page_title="VIOLA Warehouse Extractor (Google Sheet)", layout="centered")
 
-st.title("📊 VIOLA Warehouse Column Extractor")
+st.title("📊 VIOLA Warehouse Column Extractor (Google Sheet)")
+
 st.markdown(
-    "Upload a `.xlsb` file and select an AS_OF_DATE to extract and convert specified columns into a CSV."
+    """
+    ✅ **How it works:**  
+    1. Picks file from your Google Sheet list  
+    2. Downloads directly from Egnyte — no upload limit  
+    3. Processes & lets you download the tagged CSV
+    """
 )
 
-# Upload XLSB file
-uploaded_file = st.file_uploader(
-    "Upload Borrowing Base Certified Report (.xlsb)", type="xlsb"
-)
+# === CONFIG ===
+GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"
+CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv"
 
-# Column mapping: Original -> Target
-column_map = {
-    'Verified Y/N': 'VERIFICATION_FLAG',
-    'Scratch True False': 'SCRATCH_FLAG',
-    'Cohort - Final': 'COHORT',
-    'Final Creditor Name': 'FINAL_CREDITOR_NAME',
-    'Manual Pay Flag': 'MANUAL_PAY_FLAG',
-    'Exclusion Reason': 'EXCLUSION_REASON',
-    'RECEIVABLE_ID': 'RECEIVABLE_ID',
-    'SPV Transfer Date': 'SPV_TRANSFER_DATE'
-}
+# === 1) Load file list ===
+@st.cache_data(show_spinner="🔄 Loading file list...")
+def load_file_list():
+    df = pd.read_csv(CSV_EXPORT_URL)
+    return df
 
-# Date input
+try:
+    file_list = load_file_list()
+    selected_file = st.selectbox("📁 Choose a file:", file_list['File Name'])
+    share_link = file_list.loc[file_list['File Name'] == selected_file, 'Egnyte Share Link'].values[0]
+
+except Exception as e:
+    st.error(f"⚠️ Failed to load Google Sheet: {str(e)}")
+    st.stop()
+
+# === 2) Date input ===
 as_of_date = st.date_input("Select AS_OF_DATE", value=datetime.today())
 formatted_date = as_of_date.strftime('%m/%d/%Y')
 
-if uploaded_file:
+# === 3) Process if user clicks ===
+if st.button("📥 Download and Process"):
     try:
-        sheet_name = 'Main Data'
+        st.info(f"Downloading **{selected_file}** from Egnyte...")
+        response = requests.get(share_link)
+        if response.status_code != 200:
+            st.error(f"❌ Failed to download file. Status code: {response.status_code}")
+            st.stop()
 
-        # Read XLSB file without interpreting "n/a" as NaN
+        file_bytes = io.BytesIO(response.content)
+
+        # === Your column mapping ===
+        column_map = {
+            'Verified Y/N': 'VERIFICATION_FLAG',
+            'Scratch True False': 'SCRATCH_FLAG',
+            'Cohort - Final': 'COHORT',
+            'Final Creditor Name': 'FINAL_CREDITOR_NAME',
+            'Manual Pay Flag': 'MANUAL_PAY_FLAG',
+            'Exclusion Reason': 'EXCLUSION_REASON',
+            'RECEIVABLE_ID': 'RECEIVABLE_ID',
+            'SPV Transfer Date': 'SPV_TRANSFER_DATE'
+        }
+
         df = pd.read_excel(
-            uploaded_file,
-            sheet_name=sheet_name,
+            file_bytes,
+            sheet_name='Main Data',
             engine='pyxlsb',
             keep_default_na=False
         )
 
-        # ✅ If SPV Transfer Date exists, safely convert & format to MM/DD/YYYY
         if 'SPV Transfer Date' in df.columns:
-            # Convert to numeric; invalids become NaN
             df['SPV Transfer Date'] = pd.to_numeric(df['SPV Transfer Date'], errors='coerce')
-            # Convert Excel serial to datetime
             df['SPV Transfer Date'] = pd.to_datetime('1899-12-30') + pd.to_timedelta(df['SPV Transfer Date'], unit='D')
-            # Format as MM/DD/YYYY; blanks stay blank
             df['SPV Transfer Date'] = df['SPV Transfer Date'].dt.strftime('%m/%d/%Y')
 
-        # Filter and rename columns
         df_filtered = df[list(column_map.keys())].rename(columns=column_map)
-
-        # Add user-selected AS_OF_DATE in same format
         df_filtered['AS_OF_DATE'] = formatted_date
 
-        # Convert to CSV in memory
         csv_buffer = io.StringIO()
         df_filtered.to_csv(csv_buffer, index=False)
         csv_buffer.seek(0)
@@ -73,6 +92,4 @@ if uploaded_file:
         )
 
     except Exception as e:
-        st.error(f"⚠️ Something went wrong:\n\n{str(e)}")
-else:
-    st.info("👈 Please upload a `.xlsb` file to begin.")
+        st.error(f"⚠️ Something went wrong: {str(e)}")
