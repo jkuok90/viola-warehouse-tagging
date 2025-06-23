@@ -4,21 +4,19 @@ import requests
 import io
 from datetime import datetime
 
-st.set_page_config(page_title="VIOLA Warehouse Extractor (Google Sheet)", layout="centered")
+st.set_page_config(page_title="VIOLA Warehouse Extractor (Google Drive)", layout="centered")
 
-st.title("📊 VIOLA Warehouse Column Extractor (Google Sheet)")
+st.title("📊 VIOLA Warehouse Column Extractor (Google Drive)")
 
-st.markdown(
-    """
-    ✅ **How it works:**  
-    1. Picks file from your Google Sheet list  
-    2. Downloads directly from Egnyte — no upload limit  
-    3. Processes & lets you download the tagged CSV
-    """
-)
+st.markdown("""
+✅ **How it works:**  
+1. Picks file from your Google Sheet list  
+2. Downloads directly from Google Drive (raw export link)  
+3. Processes & lets you download the tagged CSV
+""")
 
 # === CONFIG ===
-GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"
+GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"  # Use your Google Sheet ID!
 CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv"
 
 # === 1) Load file list ===
@@ -30,7 +28,7 @@ def load_file_list():
 try:
     file_list = load_file_list()
     selected_file = st.selectbox("📁 Choose a file:", file_list['File Name'])
-    share_link = file_list.loc[file_list['File Name'] == selected_file, 'Egnyte Share Link'].values[0]
+    file_link = file_list.loc[file_list['File Name'] == selected_file, 'File Link'].values[0]
 
 except Exception as e:
     st.error(f"⚠️ Failed to load Google Sheet: {str(e)}")
@@ -43,8 +41,8 @@ formatted_date = as_of_date.strftime('%m/%d/%Y')
 # === 3) Process if user clicks ===
 if st.button("📥 Download and Process"):
     try:
-        st.info(f"Downloading **{selected_file}** from Egnyte...")
-        response = requests.get(share_link)
+        st.info(f"Downloading **{selected_file}** from Google Drive...")
+        response = requests.get(file_link)
         if response.status_code != 200:
             st.error(f"❌ Failed to download file. Status code: {response.status_code}")
             st.stop()
