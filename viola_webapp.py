@@ -27,6 +27,11 @@ def load_file_list():
 
 try:
     file_list = load_file_list()
+
+    # ✅ Debug: show what columns we got
+    st.write("📄 **Columns loaded from Google Sheet:**", file_list.columns.tolist())
+    st.write("🔍 **First few rows:**", file_list.head())
+
     selected_file = st.selectbox("📁 Choose a file:", file_list['File Name'])
     file_link = file_list.loc[file_list['File Name'] == selected_file, 'File Link'].values[0]
 
