@@ -51,7 +51,7 @@ QNb7eODT7OcsxF3UaXCjEB/huhRLa9bMltfMYUG6+vwiZwZhMG1ZFIMhEbvPXizn
 PsSXGL3yfr8mhqrPkelh8/iJFF5m+z/TPOGQQrwXe9oXqAOrEp1i6DxJQshm7rBI
 KMKuO/2QPLpS9AYDHVMM7+EMKmrYp57jIJwbjPedPoTDSBKrYumwqHnzg1eACJhh
 /rz2dTeItqF4fPPcYuX8ew==
------END PRIVATE KEY-----"""
+-----END PRIVATE KEY-----""",
   "client_email": "service-account-101@driven-density-445501-s7.iam.gserviceaccount.com",
   "client_id": "108315625001173526202",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
