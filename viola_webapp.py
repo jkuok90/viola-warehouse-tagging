@@ -24,23 +24,7 @@ SERVICE_ACCOUNT_INFO = {
   "type": "service_account",
   "project_id": "driven-density-445501-s7",
   "private_key_id": "8caae213e1bc0521a7af9ceecbeb02a13bb2450a",
-  "private_key": """-----BEGIN PRIVATE KEY-----
-MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCxDIk2YpTpcvJs
-zVJ4xZtGIyd3gyOAyt2WWqJCGOfCnJLj5swkwwyoK0vYdXjP8OSiPPI7r4G4sP6a
-SW5WKb9ZPbSVUjq3n6NuN1/WhOKsz7J00f/wWozewi57dbJa+WUyui4gkWy3Im1i
-RO3QeW10P2v8k4VgQ5eKo4iUMAu43ZBv6zu5Szt1y6X7bPd/eduR3NlROM12V6tS
-qYPnmVRoxexYbBkYMnwl0WqZfFa41oMONnBwsA/hX9m2ZVVYFFeON2mCiQWE/bQl
-bEYkd/xF8/4I9eQ555jbBGYPaFYRO+2ikQzPrwcRuewnMmQxZA0UavSiLp6XMLqn
-FWwCNTVtAgMBAAECggEALfTukv7g334WXlanjzDf/sM2Ref06cP+473P+29CjXoe
-COlKWUqF+QsQC3Zmrzc86b3/NK34cqwC0qK38MayZCRHwTDQjAR0pDHcfy8MNcZN
-8NPn5whiI5ps/WAONV4iPhokyhBlk13s3cK9pk02s6OY0L2sM9InvnV3iNu11zzA
-Ybqiop0XpjkANOFFvVJqxCxfhIjPHZG9WnnTagK5zIiOWgXG670bmip9dU5rABYc
-oaQKdTyL28NxjnHrP9X+pVoulS/wEGEXourkKy0x8gGtlldrZnT/SaFyn89xQTs7
-CwPjOhZ0FSxXMNSFbDFRgkrYRse6yVKbrk7lmzf3MwKBgQD0dABlQ4D7hDDfoEwg
-+frUrndhvjXynE2BIiYVGP6SL6SFNQrVXxYNjA8Pk8pvHB3V+ZYeYxqhSyc5QPTC
-+n3Nbxoayz37p0NgB2TqfxMIoEI0Wqj94jg4I2RElqf6m30gsK6p0+3+AF7tNNHf
-/vLnta5EmJeZN78BJjTz9yrPCw==
------END PRIVATE KEY-----""",
+  "private_key": """-----BEGIN PRIVATE KEY-----MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCxDIk2YpTpcvJszVJ4xZtGIyd3gyOAyt2WWqJCGOfCnJLj5swkwwyoK0vYdXjP8OSiPPI7r4G4sP6aSW5WKb9ZPbSVUjq3n6NuN1/WhOKsz7J00f/wWozewi57dbJa+WUyui4gkWy3Im1iRO3QeW10P2v8k4VgQ5eKo4iUMAu43ZBv6zu5Szt1y6X7bPd/eduR3NlROM12V6tSqYPnmVRoxexYbBkYMnwl0WqZfFa41oMONnBwsA/hX9m2ZVVYFFeON2mCiQWE/bQlbEYkd/xF8/4I9eQ555jbBGYPaFYRO+2ikQzPrwcRuewnMmQxZA0UavSiLp6XMLqnFWwCNTVtAgMBAAECggEALfTukv7g334WXlanjzDf/sM2Ref06cP+473P+29CjXoeCOlKWUqF+QsQC3Zmrzc86b3/NK34cqwC0qK38MayZCRHwTDQjAR0pDHcfy8MNcZN8NPn5whiI5ps/WAONV4iPhokyhBlk13s3cK9pk02s6OY0L2sM9InvnV3iNu11zzAYbqiop0XpjkANOFFvVJqxCxfhIjPHZG9WnnTagK5zIiOWgXG670bmip9dU5rABYcoaQKdTyL28NxjnHrP9X+pVoulS/wEGEXourkKy0x8gGtlldrZnT/SaFyn89xQTs7CwPjOhZ0FSxXMNSFbDFRgkrYRse6yVKbrk7lmzf3MwKBgQD0dABlQ4D7hDDfoEwg+frUrndhvjXynE2BIiYVGP6SL6SFNQrVXxYNjA8Pk8pvHB3V+ZYeYxqhSyc5QPTC+n3Nbxoayz37p0NgB2TqfxMIoEI0Wqj94jg4I2RElqf6m30gsK6p0+3+AF7tNNHf/vLnta5EmJeZN78BJjTz9yrPCw==-----END PRIVATE KEY-----""",
   "client_email": "service-account-101@driven-density-445501-s7.iam.gserviceaccount.com",
   "client_id": "108315625001173526202",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
