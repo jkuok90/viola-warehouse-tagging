@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import requests
 import io
 from datetime import datetime
@@ -8,32 +10,39 @@ import time
 # === PAGE SETTINGS ===
 st.set_page_config(page_title="VIOLA Warehouse Extractor (Dropbox)", layout="centered")
 
-st.title("📊 VIOLA Warehouse Column Extractor (Dropbox)")
+st.title("\U0001F4CA VIOLA Warehouse Column Extractor (Dropbox)")
 
 st.markdown("""
 ✅ **How it works:**  
-1️⃣ Picks a file from your Google Sheet list  
-2️⃣ Downloads directly from Dropbox (`?dl=1` guarantees raw binary)  
-3️⃣ Shows progress bar during download + processing  
-4️⃣ Lets you download the tagged CSV.
+1⃣ Picks a file from your Google Sheet list  
+2⃣ Downloads directly from Dropbox (`?dl=1` guarantees raw binary)  
+3⃣ Shows progress bar during download + processing  
+4⃣ Lets you download the tagged CSV.
 """)
 
-# === CONFIG ===
-GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"
-CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv&t={int(time.time())}"
+# === GOOGLE SHEETS SETUP ===
+SERVICE_ACCOUNT_PATH = "driven-density-445501-s7-8caae213e1bc.json"  # Path to your uploaded JSON file
+SPREADSHEET_NAME = "Borrowing Base Viola Tagging"
+WORKSHEET_NAME = "Sheet1"
+
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+credentials = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_PATH, scope)
+gc = gspread.authorize(credentials)
 
 # === 1) Load file list ===
+@st.cache_data
 def load_file_list():
-    df = pd.read_csv(CSV_EXPORT_URL)
-    return df
+    worksheet = gc.open(SPREADSHEET_NAME).worksheet(WORKSHEET_NAME)
+    data = worksheet.get_all_records()
+    return pd.DataFrame(data)
 
 try:
     file_list = load_file_list()
 
-    st.write("📄 **Columns loaded:**", file_list.columns.tolist())
-    st.write("🔍 **First rows:**", file_list.head())
+    st.write("\U0001F4C4 **Columns loaded:**", file_list.columns.tolist())
+    st.write("\U0001F50D **First rows:**", file_list.head())
 
-    selected_file = st.selectbox("📁 **Choose a file:**", file_list['File Name'])
+    selected_file = st.selectbox("\U0001F4C1 **Choose a file:**", file_list['File Name'])
     matches = file_list.loc[file_list['File Name'] == selected_file, 'File Link'].values
 
     if len(matches) == 0:
@@ -42,7 +51,6 @@ try:
 
     file_link = matches[0]
 
-    # ✅ Ensure Dropbox link uses ?dl=1
     if file_link.endswith("?dl=0"):
         file_link = file_link.replace("?dl=0", "?dl=1")
 
@@ -51,20 +59,18 @@ except Exception as e:
     st.stop()
 
 # === 2) Date input ===
-as_of_date = st.date_input("📅 **Select AS_OF_DATE**", value=datetime.today())
+as_of_date = st.date_input("\U0001F4C5 **Select AS_OF_DATE**", value=datetime.today())
 formatted_date = as_of_date.strftime('%m/%d/%Y')
 
 # === 3) Process with progress bar ===
-if st.button("📥 Download and Process"):
+if st.button("\U0001F4E5 Download and Process"):
     try:
-        # === Initialize progress bar + status ===
         progress = st.progress(0)
         status = st.empty()
 
         status.info(f"Starting download for **{selected_file}**...")
         progress.progress(10)
 
-        # === 1) Download from Dropbox ===
         response = requests.get(file_link)
         if response.status_code != 200:
             st.error(f"❌ Failed to download file. Status code: {response.status_code}")
@@ -75,7 +81,6 @@ if st.button("📥 Download and Process"):
 
         file_bytes = io.BytesIO(response.content)
 
-        # === 2) Read XLSB ===
         column_map = {
             'Verified Y/N': 'VERIFICATION_FLAG',
             'Scratch True False': 'SCRATCH_FLAG',
@@ -96,7 +101,7 @@ if st.button("📥 Download and Process"):
         )
 
         progress.progress(75)
-        status.info("🔄 Processing data...")
+        status.info("\U0001F504 Processing data...")
 
         if 'SPV Transfer Date' in df.columns:
             df['SPV Transfer Date'] = pd.to_numeric(df['SPV Transfer Date'], errors='coerce')
@@ -107,7 +112,7 @@ if st.button("📥 Download and Process"):
         df_filtered['AS_OF_DATE'] = formatted_date
 
         progress.progress(90)
-        status.info("📄 Converting to CSV...")
+        status.info("\U0001F4C4 Converting to CSV...")
 
         csv_buffer = io.StringIO()
         df_filtered.to_csv(csv_buffer, index=False)
