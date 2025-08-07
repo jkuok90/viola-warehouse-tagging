@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import requests
 import io
 from datetime import datetime
@@ -9,30 +7,25 @@ import time
 
 # === PAGE SETTINGS ===
 st.set_page_config(page_title="VIOLA Warehouse Extractor (Dropbox)", layout="centered")
+
 st.title("📊 VIOLA Warehouse Column Extractor (Dropbox)")
 
 st.markdown("""
 ✅ **How it works:**  
-1⃣ Picks a file from your Google Sheet list  
-2⃣ Downloads directly from Dropbox (`?dl=1` guarantees raw binary)  
-3⃣ Shows progress bar during download + processing  
-4⃣ Lets you download the tagged CSV.
+1️⃣ Picks a file from your Google Sheet list  
+2️⃣ Downloads directly from Dropbox (`?dl=1` guarantees raw binary)  
+3️⃣ Shows progress bar during download + processing  
+4️⃣ Lets you download the tagged CSV.
 """)
 
-# === GOOGLE SHEETS SETUP USING STREAMLIT SECRETS ===
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-gc = gspread.authorize(credentials)
-
-SPREADSHEET_NAME = "Borrowing Base Viola Tagging"
-WORKSHEET_NAME = "Sheet1"
+# === CONFIG ===
+GOOGLE_SHEET_ID = "1-eCtNpDvw7UxAYSkjnVoHxbOzJFTKa-fwokkh2Xta-g"
+CSV_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=csv&t={int(time.time())}"
 
 # === 1) Load file list ===
-@st.cache_data
 def load_file_list():
-    worksheet = gc.open(SPREADSHEET_NAME).worksheet(WORKSHEET_NAME)
-    data = worksheet.get_all_records()
-    return pd.DataFrame(data)
+    df = pd.read_csv(CSV_EXPORT_URL)
+    return df
 
 try:
     file_list = load_file_list()
@@ -48,6 +41,8 @@ try:
         st.stop()
 
     file_link = matches[0]
+
+    # ✅ Ensure Dropbox link uses ?dl=1
     if file_link.endswith("?dl=0"):
         file_link = file_link.replace("?dl=0", "?dl=1")
 
@@ -62,12 +57,14 @@ formatted_date = as_of_date.strftime('%m/%d/%Y')
 # === 3) Process with progress bar ===
 if st.button("📥 Download and Process"):
     try:
+        # === Initialize progress bar + status ===
         progress = st.progress(0)
         status = st.empty()
 
         status.info(f"Starting download for **{selected_file}**...")
         progress.progress(10)
 
+        # === 1) Download from Dropbox ===
         response = requests.get(file_link)
         if response.status_code != 200:
             st.error(f"❌ Failed to download file. Status code: {response.status_code}")
@@ -78,6 +75,7 @@ if st.button("📥 Download and Process"):
 
         file_bytes = io.BytesIO(response.content)
 
+        # === 2) Read XLSB ===
         column_map = {
             'Verified Y/N': 'VERIFICATION_FLAG',
             'Scratch True False': 'SCRATCH_FLAG',
