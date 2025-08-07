@@ -5,14 +5,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 import requests
 import io
 from datetime import datetime
-import time
 
 # === PAGE SETTINGS ===
 st.set_page_config(page_title="VIOLA Warehouse Extractor (Google Sheets + Dropbox)", layout="centered")
 st.title("📊 VIOLA Warehouse Column Extractor (Google Sheets + Dropbox)")
 
 st.markdown("""
-✅ **How it works:**  
+📅 **How it works:**  
 1️⃣ Picks a file from your Google Sheet list  
 2️⃣ Downloads directly from Dropbox (`?dl=1` guarantees raw binary)  
 3️⃣ Shows progress bar during download + processing  
@@ -65,11 +64,9 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(SERVICE_ACCOUNT_INFO, scope)
 gc = gspread.authorize(credentials)
 
-# === CONFIG ===
 SPREADSHEET_NAME = "VIOLA File List"
 WORKSHEET_NAME = "Sheet1"
 
-# === 1) Load file list ===
 @st.cache_data
 def load_file_list():
     worksheet = gc.open(SPREADSHEET_NAME).worksheet(WORKSHEET_NAME)
@@ -91,11 +88,9 @@ except Exception as e:
     st.error(f"⚠️ Failed to load Google Sheet: {str(e)}")
     st.stop()
 
-# === 2) Date input ===
 as_of_date = st.date_input("📅 **Select AS_OF_DATE**", value=datetime.today())
 formatted_date = as_of_date.strftime('%m/%d/%Y')
 
-# === 3) Process with progress bar ===
 if st.button("📥 Download and Process"):
     try:
         progress = st.progress(0)
